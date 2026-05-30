@@ -55,6 +55,12 @@ class User(AbstractUser):
         verbose_name='GitHub URL', max_length=256, blank=True
     )
     about = models.TextField(verbose_name='О себе', max_length=256, blank=True)
+    favorites = models.ManyToManyField(
+        'projects.Project',
+        related_name='interested_users',
+        blank=True,
+        verbose_name='Избранные проекты'
+    )
 
     objects = UserManager()
     USERNAME_FIELD = 'email'
