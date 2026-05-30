@@ -16,17 +16,21 @@ class CustomRegistrationForm(forms.ModelForm):
         fields = ('email', 'name', 'surname', 'password')
 
 
-class CustomAvtorizationForm(forms.ModelForm):
+class CustomAuthorizationForm(forms.Form):
     """Форма авторизации"""
+
+    email = forms.EmailField(label='Email', widget=forms.EmailInput)
     password = forms.CharField(label='Пароль', widget=forms.PasswordInput)
 
-    class Meta:
-        model = User
-        fields = ('email', 'password')
+    def __init__(self, *args, **kwargs):
+        # Принимает request из LoginView
+        self.request = kwargs.pop('request', None)
+        super().__init__(*args, **kwargs)
 
     def clean(self):
-        email = self.cleaned_data.get('email')
-        password = self.cleaned_data.get('password')
+        cleaned_data = super().clean()
+        email = cleaned_data.get('email')
+        password = cleaned_data.get('password')
 
         if email and password:
             try:
@@ -41,7 +45,10 @@ class CustomAvtorizationForm(forms.ModelForm):
                 raise forms.ValidationError('Учётная запись не активна')
 
             self.user_cache = user
-        return self.cleaned_data
+        return cleaned_data
+
+    def get_user(self):
+        return getattr(self, 'user_cache', None)
 
 
 class UserEditForm(forms.ModelForm):
