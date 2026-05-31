@@ -1,4 +1,11 @@
+from django.contrib.auth import get_user_model
 from django.db import models
+from django.urls import reverse
+
+from team_finder.constants import (MAX_LEN_PROJECT_NAME, MAX_LEN_STATUS,
+                                   STATUS_CHOICES)
+
+User = get_user_model()
 
 
 class Project(models.Model):
@@ -6,17 +13,15 @@ class Project(models.Model):
     Модель проекта
     """
 
-    STATUS_CHOICES = [
-        ('open', 'Open'),
-        ('closed', 'Closed'),
-    ]
-
-    name = models.CharField(verbose_name='Название проекта', max_length=200)
+    name = models.CharField(
+        verbose_name='Название проекта',
+        max_length=MAX_LEN_PROJECT_NAME,
+    )
     description = models.TextField(
         verbose_name='Описание проекта', blank=True
     )
     owner = models.ForeignKey(
-        'users.User',
+        User,
         on_delete=models.CASCADE,
         related_name='owned_projects'
     )
@@ -28,12 +33,12 @@ class Project(models.Model):
     )
     status = models.CharField(
         verbose_name='Статус проекта',
-        max_length=6,
-        blank=False,
+        max_length=MAX_LEN_STATUS,
         choices=STATUS_CHOICES,
+        default='open',
     )
     participants = models.ManyToManyField(
-        'users.User',
+        User,
         related_name='participating_projects',
         blank=True
     )
@@ -44,3 +49,6 @@ class Project(models.Model):
 
     def __str__(self):
         return self.name
+
+    def get_absolute_url(self):
+        return reverse('projects:detail', kwargs={'project_id': self.pk})

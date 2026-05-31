@@ -1,10 +1,12 @@
-# users/admin.py
 from django.contrib import admin
+from django.contrib.auth import get_user_model
 from django.contrib.auth.admin import UserAdmin
-from .models import User
+
+User = get_user_model()
 
 
-class CustomUserAdmin(UserAdmin):
+@admin.register(User)
+class TeamFinderUserAdmin(UserAdmin):
     """Класс для настройки отображения модели User в админке"""
 
     list_display = (
@@ -34,6 +36,3 @@ class CustomUserAdmin(UserAdmin):
             )
         }),
     )
-
-
-admin.site.register(User, CustomUserAdmin)

@@ -1,15 +1,13 @@
-# projects/forms.py
 from django import forms
+
+from team_finder.constants import STATUS_CHOICES
+from team_finder.mixins import GitHubURLValidationMixin
+
 from .models import Project
 
 
-class ProjectForm(forms.ModelForm):
+class ProjectForm(GitHubURLValidationMixin, forms.ModelForm):
     """Форма создания и редактирования проекта"""
-
-    STATUS_CHOICES = [
-        ('open', 'Открыт'),
-        ('closed', 'Закрыт'),
-    ]
 
     status = forms.ChoiceField(
         choices=STATUS_CHOICES,
@@ -20,18 +18,3 @@ class ProjectForm(forms.ModelForm):
     class Meta:
         model = Project
         fields = ('name', 'description', 'github_url', 'status')
-
-    def clean_github_url(self):
-        """Валидация ссылки на GitHub"""
-
-        url = self.cleaned_data.get('github_url')
-        if url:
-            if 'github.com' not in url:
-                raise forms.ValidationError('Ссылка должна вести на GitHub')
-            if not url.startswith((
-                'https://github.com/', 'http://github.com/'
-            )):
-                raise forms.ValidationError(
-                    'Введите корректный URL GitHub репозитория'
-                )
-        return url

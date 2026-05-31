@@ -1,14 +1,18 @@
-# projects/views.py
-from django.views.generic import ListView, DetailView, CreateView, UpdateView
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.urls import reverse
-from django.http import JsonResponse
-from django.views.decorators.http import require_POST
-from django.shortcuts import get_object_or_404
-from django.contrib.auth.decorators import login_required
+import http
 
-from .models import Project
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
+from django.urls import reverse
+from django.views.decorators.http import require_POST
+from django.views.generic import CreateView, DetailView, ListView, UpdateView
+
+from team_finder.constants import (PROJECTS_ORDERING, PROJECTS_PAGINATE_BY,
+                                   STATUS_CLOSED)
+
 from .forms import ProjectForm
+from .models import Project
 
 
 class ProjectListView(ListView):
@@ -17,8 +21,14 @@ class ProjectListView(ListView):
     model = Project
     template_name = 'projects/project_list.html'
     context_object_name = 'projects'
-    paginate_by = 12
-    ordering = ['-created_at']
+    paginate_by = PROJECTS_PAGINATE_BY
+    ordering = [PROJECTS_ORDERING]
+
+    def get_queryset(self):
+        return (Project.objects
+                .select_related('owner')
+                .prefetch_related('participants')
+                .order_by(*self.ordering))
 
 
 class ProjectCreateView(LoginRequiredMixin, CreateView):
@@ -40,7 +50,10 @@ class ProjectCreateView(LoginRequiredMixin, CreateView):
         return context
 
     def get_success_url(self):
-        return reverse('projects:detail', kwargs={'project_id': self.object.pk})
+        return reverse(
+            'projects:detail',
+            kwargs={'project_id': self.object.pk}
+        )
 
 
 class ProjectDetailView(DetailView):
@@ -65,30 +78,35 @@ class ProjectUpdateView(LoginRequiredMixin, UpdateView):
         return context
 
     def get_success_url(self):
-        return reverse('projects:detail', kwargs={'project_id': self.object.pk})
+        return reverse(
+            'projects:detail', kwargs={'project_id': self.object.pk}
+        )
 
 
 class FavoriteListView(LoginRequiredMixin, ListView):
     model = Project
     template_name = 'projects/favorite_projects.html'
     context_object_name = 'projects'
-    paginate_by = 12
+    paginate_by = PROJECTS_PAGINATE_BY
 
     def get_queryset(self):
-        return self.request.user.favorites.all()
+        return (self.request.user.favorites
+                .select_related('owner')
+                .prefetch_related('participants'))
 
 
 @login_required
 @require_POST
 def toggle_favorite(request, project_id):
     project = get_object_or_404(Project, pk=project_id)
-    if project.interested_users.filter(pk=request.user.pk).exists():
+
+    if (is_favorited := project.interested_users.filter(
+            pk=request.user.pk).exists()):
         request.user.favorites.remove(project)
-        favorited = False
     else:
         request.user.favorites.add(project)
-        favorited = True
-    return JsonResponse({'status': 'ok', 'favorited': favorited})
+
+    return JsonResponse({'status': 'ok', 'favorited': not is_favorited})
 
 
 @login_required
@@ -97,17 +115,17 @@ def toggle_participate(request, project_id):
     """Присоединиться/отказаться от участия в проекте"""
 
     project = get_object_or_404(Project, pk=project_id)
-    if project.participants.filter(pk=request.user.pk).exists():
+
+    if (is_participating := project.participants.filter(
+            pk=request.user.pk).exists()):
         project.participants.remove(request.user)
-        participated = False
     else:
         project.participants.add(request.user)
-        participated = True
 
     return JsonResponse({
         'status': 'ok',
-        'participated': participated,
-        'participant': participated,
+        'participated': not is_participating,
+        'participant': not is_participating,
         'participants_count': project.participants.count()
     })
 
@@ -118,11 +136,13 @@ def complete_project(request, project_id):
     """Завершить проект (только для владельца)"""
 
     project = get_object_or_404(Project, pk=project_id, owner=request.user)
-    if project.status == 'closed':
+
+    if project.status == STATUS_CLOSED:
         return JsonResponse(
             {'status': 'error', 'message': 'Проект уже завершён'},
-            status=400
+            status=http.HTTPStatus.BAD_REQUEST
         )
-    project.status = 'closed'
+
+    project.status = STATUS_CLOSED
     project.save()
-    return JsonResponse({'status': 'ok', 'project_status': 'closed'})
+    return JsonResponse({'status': 'ok', 'project_status': STATUS_CLOSED})

@@ -149,9 +149,7 @@ cp .env_example .env
 | **POSTGRES_USER**     | Имя пользователя PostgreSQL.                                                                                                                               |
 | **POSTGRES_PASSWORD** | Пароль пользователя PostgreSQL.                                                                                                                            |
 | **POSTGRES_HOST**     | Адрес сервера БД. В случае локальной разработки localhost.                                                                                                 |
-| **POSTGRES_PORT**     | Порт подключения к БД (по умолчанию `5432`).                                                                                                               |
-| **TASK_VERSION**      | Номер варианта вашего задания. Используется для определения набора HTML-шаблонов.                                                                          |
-
+| **POSTGRES_PORT**     | Порт подключения к БД (по умолчанию `5432`).                                                  
 ---
 
 ## 4. Запуск PostgreSQL
@@ -195,3 +193,6 @@ python manage.py migrate
 python manage.py runserver
 ```
 Проект будет доступен по адресу: http://localhost:8000
+
+### Автор: 
+#### Александр, почта для связи: zubakoval5216@yandex.ru

@@ -1,12 +1,13 @@
 # users/forms.py
 from django import forms
-from django.contrib.auth.forms import (
-    UserCreationForm, PasswordChangeForm
-)
-from .models import User
+from django.contrib.auth import get_user_model
+
+from team_finder.mixins import GitHubURLValidationMixin
+
+User = get_user_model()
 
 
-class CustomRegistrationForm(forms.ModelForm):
+class TeamFinderRegistrationForm(forms.ModelForm):
     """Переопределение формы регистрации"""
 
     password = forms.CharField(label='Пароль', widget=forms.PasswordInput)
@@ -35,7 +36,7 @@ class CustomRegistrationForm(forms.ModelForm):
         return user
 
 
-class CustomAuthorizationForm(forms.Form):
+class TeamFinderAuthorizationForm(forms.Form):
     """Форма авторизации"""
 
     email = forms.EmailField(label='Email', widget=forms.EmailInput)
@@ -70,7 +71,7 @@ class CustomAuthorizationForm(forms.Form):
         return getattr(self, 'user_cache', None)
 
 
-class UserEditForm(forms.ModelForm):
+class UserEditForm(GitHubURLValidationMixin, forms.ModelForm):
     """Форма редактирования профиля"""
 
     class Meta:
@@ -99,19 +100,4 @@ class UserEditForm(forms.ModelForm):
                 raise forms.ValidationError(
                     'Пользователь с таким номером телефона уже существует'
                 )
-
         return phone
-
-    def clean_github_url(self):
-        """Валидация ссылки на GitHub"""
-        url = self.cleaned_data.get('github_url')
-        if url:
-            if 'github.com' not in url:
-                raise forms.ValidationError('Ссылка должна вести на GitHub')
-            if not url.startswith((
-                'https://github.com/', 'http://github.com/'
-            )):
-                raise forms.ValidationError(
-                    'Введите корректный URL GitHub репозитория'
-                )
-        return url

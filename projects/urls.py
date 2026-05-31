@@ -1,13 +1,12 @@
-# projects/urls.py
-from django.urls import path
 from django.shortcuts import redirect
-from . import views
+from django.urls import path
 
+from . import views
 
 app_name = 'projects'
 
 urlpatterns = [
-    path('', lambda request: redirect('list/')),
+    path('', lambda request: redirect('list/'), name='home'),
     path('list/', views.ProjectListView.as_view(), name='list'),
     path('create-project/', views.ProjectCreateView.as_view(), name='create'),
     path(

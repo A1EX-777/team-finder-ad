@@ -1,29 +1,26 @@
-# users/urls.py
-from django.urls import path
 from django.contrib.auth.views import LoginView, PasswordChangeView
-from django.views.generic import CreateView
-from django.urls import reverse_lazy
 from django.shortcuts import redirect
-from . import views
-from .models import User
-from .forms import CustomRegistrationForm, CustomAuthorizationForm
+from django.urls import path, reverse_lazy
+from django.views.generic import CreateView
 
+from . import views
+from .forms import TeamFinderAuthorizationForm, TeamFinderRegistrationForm
+from .models import User
 
 app_name = 'users'
 
 urlpatterns = [
-    path('', lambda request: redirect('list/')),
     path('register/',
          CreateView.as_view(
              model=User,
-             form_class=CustomRegistrationForm,
+             form_class=TeamFinderRegistrationForm,
              template_name='users/register.html',
              success_url=reverse_lazy('projects:list')
          ),
          name='register'),
     path('login/',
          LoginView.as_view(
-             form_class=CustomAuthorizationForm,
+             form_class=TeamFinderAuthorizationForm,
              template_name='users/login.html',
              redirect_authenticated_user=True,
          ),

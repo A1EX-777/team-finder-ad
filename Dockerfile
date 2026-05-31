@@ -5,7 +5,13 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y \
     libpq-dev \
     gcc \
+    libfreetype6-dev \
+    libjpeg62-turbo-dev \
+    zlib1g-dev \
     && rm -rf /var/lib/apt/lists/*
+
+# Копируем шрифты
+COPY ./fonts /app/fonts
 
 COPY requirements.txt .
 RUN pip install --upgrade pip

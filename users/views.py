@@ -1,19 +1,22 @@
-# users/views.py
-from django.views.generic import ListView, DetailView, UpdateView
-from django.urls import reverse_lazy
+from django.contrib.auth import get_user_model, logout
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth import logout
 from django.contrib.auth.views import PasswordChangeView
 from django.shortcuts import redirect
-from .models import User
+from django.urls import reverse
+from django.views.generic import DetailView, ListView, UpdateView
+
+from team_finder.constants import PROJECTS_PAGINATE_BY
+
 from .forms import UserEditForm
+
+User = get_user_model()
 
 
 class UserListView(ListView):
     model = User
     template_name = 'users/participants.html'
     context_object_name = 'users'
-    paginate_by = 12
+    paginate_by = PROJECTS_PAGINATE_BY
     ordering = ['-date_joined']
 
     def get_queryset(self):
@@ -67,19 +70,15 @@ class UserUpdateView(LoginRequiredMixin, UpdateView):
         return self.request.user
 
     def get_success_url(self):
-        return reverse_lazy(
-            'users:profile',
-            kwargs={'user_id': self.request.user.pk}
-        )
+        return reverse('users:profile', kwargs={'user_id': self.object.pk})
 
 
 class UserPasswordChangeView(LoginRequiredMixin, PasswordChangeView):
     template_name = 'users/change_password.html'
 
     def get_success_url(self):
-        return reverse_lazy(
-            'users:profile',
-            kwargs={'user_id': self.request.user.pk}
+        return reverse(
+            'users:profile', kwargs={'user_id': self.request.user.pk}
         )
 
 
