@@ -9,6 +9,48 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - teamfinder_network
+
+  backend:
+    build: .
+    container_name: teamfinder_backend
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./media:/app/media
+      - ./collected_static:/app/staticfiles
+    command: sh -c "python manage.py collectstatic --noinput && gunicorn --bind 0.0.0.0:8000 team_finder.wsgi"
+    networks:
+      - teamfinder_network
+    restart: always
+
+  nginx:
+    image: nginx:alpine
+    container_name: teamfinder_nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - ./collected_static:/static
+      - ./media:/media
+    depends_on:
+      - backend
+    networks:
+      - teamfinder_network
+    restart: always
 
 volumes:
   postgres_data:
+
+networks:
+  teamfinder_network:
+    driver: bridge
