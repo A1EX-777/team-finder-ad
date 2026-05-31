@@ -2,6 +2,9 @@
 from django.views.generic import ListView, DetailView, UpdateView
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth import logout
+from django.contrib.auth.views import PasswordChangeView
+from django.shortcuts import redirect
 from .models import User
 from .forms import UserEditForm
 
@@ -50,9 +53,9 @@ class UserListView(ListView):
 
 class UserDetailView(DetailView):
     model = User
-    template_name = 'users/user_details.html'
+    template_name = 'users/user-details.html'
     context_object_name = 'user'
-    pk_url_kwarg = 'user_pk'
+    pk_url_kwarg = 'user_id'
 
 
 class UserUpdateView(LoginRequiredMixin, UpdateView):
@@ -68,3 +71,19 @@ class UserUpdateView(LoginRequiredMixin, UpdateView):
             'users:profile',
             kwargs={'user_pk': self.request.user.pk}
         )
+
+
+class UserPasswordChangeView(LoginRequiredMixin, PasswordChangeView):
+    template_name = 'users/change_password.html'
+
+    def get_success_url(self):
+        return reverse_lazy(
+            'users:profile',
+            kwargs={'user_pk': self.request.user.pk}
+        )
+
+
+def logout_view(request):
+    """Выход пользователя с редиректом на главную"""
+    logout(request)
+    return redirect('projects:list')

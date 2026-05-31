@@ -1,12 +1,12 @@
 # users/urls.py
 from django.urls import path
-from django.contrib.auth.views import LoginView, LogoutView, PasswordChangeView
+from django.contrib.auth.views import LoginView, PasswordChangeView
 from django.views.generic import CreateView
+from django.urls import reverse_lazy
+from django.shortcuts import redirect
 from . import views
 from .models import User
 from .forms import CustomRegistrationForm, CustomAuthorizationForm
-from django.urls import reverse_lazy
-from django.shortcuts import redirect
 
 
 app_name = 'users'
@@ -28,14 +28,15 @@ urlpatterns = [
              redirect_authenticated_user=True,
          ),
          name='login'),
-    path('logout/', LogoutView.as_view(), name='logout'),
+    path(
+        'logout/',
+        views.logout_view,
+        name='logout'
+    ),
     path('change-password/',
-         PasswordChangeView.as_view(
-             template_name='users/change_password.html',
-             success_url=reverse_lazy('users:profile')
-         ),
+         views.UserPasswordChangeView.as_view(),
          name='change_password'),
     path('list/', views.UserListView.as_view(), name='user_list'),
-    path('<int:user_pk>/', views.UserDetailView.as_view(), name='profile'),
+    path('<int:user_id>/', views.UserDetailView.as_view(), name='profile'),
     path('edit-profile/', views.UserUpdateView.as_view(), name='edit_profile'),
 ]

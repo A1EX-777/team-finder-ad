@@ -30,7 +30,7 @@ class Project(models.Model):
         verbose_name='Статус проекта',
         max_length=6,
         blank=False,
-        default=STATUS_CHOICES,
+        choices=STATUS_CHOICES,
     )
     participants = models.ManyToManyField(
         'users.User',

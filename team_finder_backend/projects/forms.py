@@ -23,6 +23,7 @@ class ProjectForm(forms.ModelForm):
 
     def clean_github_url(self):
         """Валидация ссылки на GitHub"""
+
         url = self.cleaned_data.get('github_url')
         if url:
             if 'github.com' not in url:

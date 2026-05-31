@@ -37,6 +37,7 @@ class User(AbstractUser):
     is_active, is_staff - стандартные поля модели AbstractUser
     """
 
+    username = None
     email = models.EmailField(verbose_name='Почта', unique=True, blank=False)
     name = models.CharField(verbose_name='Имя', max_length=124, blank=False)
     surname = models.CharField(
@@ -74,6 +75,7 @@ class User(AbstractUser):
 
     def _generate_avatar(self):
         """Генерирует аватар с первой буквой имени"""
+
         # Размер аватара
         size = (200, 200)
 
@@ -108,6 +110,7 @@ class User(AbstractUser):
 
     def _get_random_color(self):
         """Возвращает случайный цвет"""
+
         r = random.randint(50, 200)
         g = random.randint(50, 200)
         b = random.randint(50, 200)

@@ -15,6 +15,25 @@ class CustomRegistrationForm(forms.ModelForm):
         model = User
         fields = ('email', 'name', 'surname', 'password')
 
+    def clean_email(self):
+        """Проверка на уникальность email"""
+
+        email = self.cleaned_data.get('email')
+        if email and User.objects.filter(email=email).exists():
+            raise forms.ValidationError(
+                'Пользователь с таким email уже существует'
+            )
+        return email
+
+    def save(self, commit=True):
+        """Сохранение пользователя с заполнением пароля"""
+
+        user = super().save(commit=False)
+        user.set_password(self.cleaned_data['password'])
+        if commit:
+            user.save()
+        return user
+
 
 class CustomAuthorizationForm(forms.Form):
     """Форма авторизации"""
