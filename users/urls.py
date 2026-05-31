@@ -1,11 +1,12 @@
-from django.contrib.auth.views import LoginView, PasswordChangeView
-from django.shortcuts import redirect
+from django.contrib.auth import get_user_model
+from django.contrib.auth.views import LoginView
 from django.urls import path, reverse_lazy
 from django.views.generic import CreateView
 
 from . import views
 from .forms import TeamFinderAuthorizationForm, TeamFinderRegistrationForm
-from .models import User
+
+User = get_user_model()
 
 app_name = 'users'
 
