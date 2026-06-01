@@ -27,8 +27,7 @@ class ProjectListView(ListView):
     def get_queryset(self):
         return (Project.objects
                 .select_related('owner')
-                .prefetch_related('participants')
-                .order_by(*self.ordering))
+                .prefetch_related('participants'))
 
 
 class ProjectCreateView(LoginRequiredMixin, CreateView):

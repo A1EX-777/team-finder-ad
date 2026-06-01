@@ -6,7 +6,6 @@ from . import views
 app_name = 'projects'
 
 urlpatterns = [
-    path('', lambda request: redirect('list/'), name='home'),
     path('list/', views.ProjectListView.as_view(), name='list'),
     path('create-project/', views.ProjectCreateView.as_view(), name='create'),
     path(

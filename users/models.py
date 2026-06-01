@@ -8,7 +8,8 @@ from django.db import models
 from PIL import Image, ImageDraw, ImageFont
 
 from team_finder import settings
-from team_finder.constants import (AVATAR_SIZE, AVATAR_TEXT_COLOR,
+from team_finder.constants import (AVATAR_FONT_SIZE, AVATAR_SIZE,
+                                   AVATAR_TEXT_COLOR, FONT_PATHS,
                                    MAX_LEN_ABOUT, MAX_LEN_GITHUB_URL,
                                    MAX_LEN_USER_NAME, MAX_LEN_USER_PHONE,
                                    MAX_LEN_USER_SURNAME)
@@ -27,7 +28,6 @@ class User(AbstractUser):
     name = models.CharField(
         verbose_name='Имя',
         max_length=MAX_LEN_USER_NAME,
-        blank=False
     )
     surname = models.CharField(
         verbose_name='Фамилия',
@@ -93,23 +93,25 @@ class User(AbstractUser):
         # Берет первую букву имени и делает её заглавной
         letter = self.name[0].upper()
 
-        # Поиск шрифта
-        font_paths = [
-            os.path.join(settings.BASE_DIR, 'fonts', 'DejaVuSans-Bold.ttf'),
-            "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
-        ]
-
         font = None
-        for path in font_paths:
-            if os.path.exists(path):
+        for path in FONT_PATHS:
+            if path.startswith('/'):
+                full_path = path
+            else:
+                full_path = os.path.join(settings.BASE_DIR, path)
+
+            if os.path.exists(full_path):
                 try:
-                    font = ImageFont.truetype(path, size[0] // 2)
+                    font = ImageFont.truetype(full_path, AVATAR_FONT_SIZE)
                     break
                 except OSError:
                     continue
 
         if font is None:
-            font = ImageFont.load_default()
+            try:
+                font = ImageFont.load_default(AVATAR_FONT_SIZE)
+            except TypeError:
+                font = ImageFont.load_default()
 
         # Задаем размер текста
         bbox = draw.textbbox((0, 0), letter, font=font)

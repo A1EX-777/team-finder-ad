@@ -3,7 +3,7 @@ from django.db import models
 from django.urls import reverse
 
 from team_finder.constants import (MAX_LEN_PROJECT_NAME, MAX_LEN_STATUS,
-                                   STATUS_CHOICES)
+                                   STATUS_CHOICES, STATUS_OPEN)
 
 User = get_user_model()
 
@@ -35,7 +35,7 @@ class Project(models.Model):
         verbose_name='Статус проекта',
         max_length=MAX_LEN_STATUS,
         choices=STATUS_CHOICES,
-        default='open',
+        default=STATUS_OPEN,
     )
     participants = models.ManyToManyField(
         User,
