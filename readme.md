@@ -194,6 +194,3 @@ python manage.py migrate
 python manage.py runserver
 ```
 Проект будет доступен по адресу: http://localhost:8000
-
-### Автор: 
-#### Александр, почта для связи: zubakoval5216@yandex.ru
